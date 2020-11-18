@@ -46,10 +46,6 @@ data class VCRoom(
   val token: String = ""
 )
 
-interface AppStore {
-  var paused: Boolean
-}
-
 @Composable
 fun LoadingOverlay() {
   Box(modifier = Modifier.fillMaxSize().background(Color(0x44000000))) {
@@ -63,7 +59,7 @@ fun CallScreen(
   room: VCRoom?,
   onGoBack: () -> Unit,
   analytics: CallScreenAnalytics,
-  appStore: AppStore,
+  isActivityPaused: Boolean,
 ) {
   val context = ContextAmbient.current
   remember(room) {
@@ -97,8 +93,8 @@ fun CallScreen(
 
   val subscribers = callViewModel?.subscribers?.values?.toList()
 
-  remember(appStore.paused) {
-    if (appStore.paused) {
+  remember(isActivityPaused) {
+    if (isActivityPaused) {
       callViewModel?.pause()
     } else {
       callViewModel?.resume()

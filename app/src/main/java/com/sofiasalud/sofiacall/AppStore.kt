@@ -5,8 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 
-class AppStore : ViewModel(), com.sofiasalud.callscreen.AppStore {
-  override var paused: Boolean by mutableStateOf(false)
+class AppStore : ViewModel() {
+  var paused: Boolean by mutableStateOf(false)
+    private set
 
   fun onPause() {
     paused = true

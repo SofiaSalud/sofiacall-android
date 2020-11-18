@@ -151,7 +151,7 @@ fun MainView(openUrl: (url: String) -> Unit, prefs: SharedPreferences, analytics
         else -> {
           CallScreen(
             analytics = analytics,
-            appStore = appStore,
+            isActivityPaused = appStore.paused,
             name = name,
             room = currentRoom!!,
             onGoBack = {
