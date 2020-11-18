@@ -1,0 +1,3 @@
+rootProject.name = "Sofia Call"
+include ':app'
+include ':sofia-callscreen'
