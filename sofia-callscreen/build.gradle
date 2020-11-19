@@ -1,6 +1,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.SofiaSalud'
+version='1.0'
 
 android {
     compileSdkVersion 30
@@ -9,7 +13,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName version
 
         consumerProguardFiles "consumer-rules.pro"
     }
