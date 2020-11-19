@@ -19,7 +19,7 @@ fun OpentokError.didConnectionFail(): Boolean {
   }
 }
 
-class CallViewModel(private val context: Context, private val analytics: CallScreenAnalytics, private val audioOnly: Boolean = false) : ViewModel() {
+class CallViewModel(private val context: Context, private val analytics: CallScreenAnalytics?, private val audioOnly: Boolean = false) : ViewModel() {
   companion object {
     const val NETWORK_STAT_WINDOW = 5.0
     const val STAT_TIER_POOR = 50
@@ -64,12 +64,12 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
         .build()
     session?.connect(token)
     session?.setSessionListener(sessionListener)
-    analytics.trackVideoSessionConnecting(sessionId)
+    analytics?.trackVideoSessionConnecting(sessionId)
   }
 
   fun end() {
     log("End...")
-    analytics.trackVideoHangUp(session?.sessionId ?: "")
+    analytics?.trackVideoHangUp(session?.sessionId ?: "")
 
     publisher?.destroy()
 
@@ -93,19 +93,19 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
   }
 
   fun setPublisherMuted(value: Boolean) {
-    analytics.trackVideoUpdateAudioEnabled(session?.sessionId ?: "", !value)
+    analytics?.trackVideoUpdateAudioEnabled(session?.sessionId ?: "", !value)
     muted = value
     publisher?.publishAudio = !value
   }
 
   fun setPublisherCameraEnabled(value: Boolean) {
-    analytics.trackVideoUpdateCameraEnabled(session?.sessionId ?: "", value)
+    analytics?.trackVideoUpdateCameraEnabled(session?.sessionId ?: "", value)
     cameraEnabled = value
     publisher?.publishVideo = value
   }
 
   fun togglePublisherCameraFacingFront() {
-    analytics.trackVideoToggleCamera(session?.sessionId ?: "")
+    analytics?.trackVideoToggleCamera(session?.sessionId ?: "")
     cameraFacingFront = !cameraFacingFront
     publisher?.cycleCamera()
   }
@@ -117,7 +117,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
   private val sessionListener = object : Session.SessionListener, Session.ReconnectionListener {
     override fun onConnected(session: Session?) {
       log("onConnected")
-      analytics.trackVideoSessionConnected(session?.sessionId ?: "")
+      analytics?.trackVideoSessionConnected(session?.sessionId ?: "")
       publisher = Publisher
         .Builder(context)
         .name(publisherName ?: "")
@@ -127,7 +127,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
           it.publishAudio = !muted
           if (!cameraFacingFront) it.cycleCamera()
 
-          analytics.trackVideoPublisherCreated(session?.sessionId ?: "")
+          analytics?.trackVideoPublisherCreated(session?.sessionId ?: "")
           it.setPublisherListener(publisherListener)
           log("About to publish...")
           session?.publish(it)
@@ -135,16 +135,16 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
     }
 
     override fun onDisconnected(session: Session?) {
-      analytics.trackVideoSessionDisconnected(session?.sessionId ?: "")
+      analytics?.trackVideoSessionDisconnected(session?.sessionId ?: "")
       Log.i("CallViewModel", "Session Disconnected")
     }
 
     override fun onStreamReceived(session: Session?, stream: Stream?) {
       log("onStreamReceived")
-      analytics.trackVideoStreamCreated(session?.sessionId ?: "", stream?.streamId ?: "")
+      analytics?.trackVideoStreamCreated(session?.sessionId ?: "", stream?.streamId ?: "")
       val id = stream?.streamId ?: ""
       subscribers[id] = Subscriber.Builder(context, stream).build().also {
-        analytics.trackVideoSubscriberSubscribed(
+        analytics?.trackVideoSubscriberSubscribed(
           session?.sessionId ?: "",
           stream?.streamId ?: "",
           stream?.name ?: ""
@@ -162,11 +162,11 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
 
     override fun onStreamDropped(session: Session?, stream: Stream?) {
       log("onStreamDropped")
-      analytics.trackVideoStreamDestroyed(session?.sessionId ?: "", stream?.streamId ?: "")
+      analytics?.trackVideoStreamDestroyed(session?.sessionId ?: "", stream?.streamId ?: "")
       val id = stream?.streamId ?: ""
       if (subscribers.containsKey(id)) {
         session?.unsubscribe(subscribers[id])
-        analytics.trackVideoSubscriberUnsubscribed(
+        analytics?.trackVideoSubscriberUnsubscribed(
           session?.sessionId ?: "",
           stream?.streamId ?: ""
         )
@@ -186,7 +186,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
     }
 
     override fun onError(session: Session?, opentokError: OpentokError?) {
-      analytics.trackVideoSessionError(session?.sessionId ?: "", opentokError?.message ?: "")
+      analytics?.trackVideoSessionError(session?.sessionId ?: "", opentokError?.message ?: "")
       Log.e("CallViewModel", "Session error: " + opentokError?.message)
     }
   }
@@ -198,7 +198,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
   private val publisherListener = object : PublisherKit.PublisherListener {
     override fun onStreamCreated(publisherKit: PublisherKit?, stream: Stream?) {
       log("publisher stream created")
-      analytics.trackVideoPublisherStreamCreated(
+      analytics?.trackVideoPublisherStreamCreated(
         publisherKit?.session?.sessionId ?: "",
         stream?.streamId ?: ""
       )
@@ -206,7 +206,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
 
     override fun onStreamDestroyed(publisherKit: PublisherKit?, stream: Stream?) {
       log("publisher stream destroyed")
-      analytics.trackVideoPublisherStreamDestroyed(
+      analytics?.trackVideoPublisherStreamDestroyed(
         publisherKit?.session?.sessionId ?: "",
         stream?.streamId ?: ""
       )
@@ -214,7 +214,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
 
     override fun onError(publisherKit: PublisherKit?, opentokError: OpentokError?) {
       Log.e("CallViewModel", "Publisher error: " + opentokError?.message)
-      analytics.trackVideoPublisherError(
+      analytics?.trackVideoPublisherError(
         publisherKit?.session?.sessionId ?: "",
         publisherKit?.stream?.streamId ?: "",
         opentokError?.message ?: ""
@@ -229,7 +229,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
   private val subscriberListener = object : SubscriberKit.SubscriberListener, SubscriberKit.VideoStatsListener, SubscriberKit.AudioStatsListener {
     override fun onConnected(subscriberKit: SubscriberKit?) {
       log("subscriber connected")
-      analytics.trackVideoSubscriberConnected(
+      analytics?.trackVideoSubscriberConnected(
         subscriberKit?.session?.sessionId ?: "",
         subscriberKit?.stream?.streamId ?: ""
       )
@@ -237,7 +237,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
 
     override fun onDisconnected(subscriberKit: SubscriberKit?) {
       log("subscriber disconnected")
-      analytics.trackVideoSubscriberDisconnected(
+      analytics?.trackVideoSubscriberDisconnected(
         subscriberKit?.session?.sessionId ?: "",
         subscriberKit?.stream?.streamId ?: ""
       )
@@ -255,7 +255,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
 
     override fun onError(subscriberKit: SubscriberKit?, opentokError: OpentokError?) {
       log("subscriber error ${opentokError?.message ?: ""}")
-      analytics.trackVideoSubscriberError(
+      analytics?.trackVideoSubscriberError(
         subscriberKit?.session?.sessionId ?: "",
         subscriberKit?.stream?.streamId ?: "",
         opentokError?.message ?: ""

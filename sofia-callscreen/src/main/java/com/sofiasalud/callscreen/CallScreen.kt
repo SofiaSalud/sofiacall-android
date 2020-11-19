@@ -58,13 +58,13 @@ fun CallScreen(
   name: String,
   room: VCRoom?,
   onGoBack: () -> Unit,
-  analytics: CallScreenAnalytics,
+  analytics: CallScreenAnalytics?,
   isActivityPaused: Boolean,
 ) {
   val context = ContextAmbient.current
   remember(room) {
-    analytics.trackScreenVideoCall()
-    analytics.trackVideoLoad(room?.sessionId ?: "")
+    analytics?.trackScreenVideoCall()
+    analytics?.trackVideoLoad(room?.sessionId ?: "")
   }
 
   val initCallViewModel = { rm: VCRoom?, audioOnly: Boolean ->
