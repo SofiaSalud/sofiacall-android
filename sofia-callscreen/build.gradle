@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group='com.github.SofiaSalud'
-version='1.2'
+version='1.3'
 
 android {
     compileSdkVersion 30

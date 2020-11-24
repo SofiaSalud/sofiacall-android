@@ -60,6 +60,8 @@ fun CallScreen(
   onGoBack: () -> Unit,
   analytics: CallScreenAnalytics?,
   isActivityPaused: Boolean,
+  titleOverride: String? = null,
+  subtitleOverride: String? = null,
 ) {
   val context = ContextAmbient.current
   remember(room) {
@@ -79,12 +81,12 @@ fun CallScreen(
   val (callData, setCallData) = remember { mutableStateOf(Pair(false, 1))}
   val (audioOnly, callId) = callData
 
-  val (callViewModel, setCallViewModel) = remember { mutableStateOf(initCallViewModel(room, false)) }
+  val (callViewModel, setCallViewModel) = remember { mutableStateOf<CallViewModel?>(null) }
 
   DisposableEffect(room, audioOnly, callId) {
+    setCallViewModel(initCallViewModel(room, audioOnly))
     onDispose {
       callViewModel?.end()
-      setCallViewModel(initCallViewModel(room, audioOnly))
     }
   }
   val resetCallViewModel = { audio: Boolean ->
@@ -148,8 +150,8 @@ fun CallScreen(
         }
       }
     },
-    subscriberName = subscribers?.joinToString(separator = ", ") { it.stream?.name ?: "" },
-    subscriberTitle = room?.name,
+    subscriberName = titleOverride ?: subscribers?.joinToString(separator = ", ") { it.stream?.name ?: "" },
+    subscriberTitle = subtitleOverride ?: room?.name,
     muted = callViewModel?.muted ?: false,
     setMuted = { callViewModel?.setPublisherMuted(it) },
     cameraEnabled = callViewModel?.cameraEnabled ?: true,

@@ -14,6 +14,8 @@ import com.sofiasalud.callscreen.ui.CallScreenTheme
 class CallView(context: Context, attrs: AttributeSet? = null, defStyleArr: Int = 0) : AbstractComposeView(context, attrs, defStyleArr) {
     var room by mutableStateOf<VCRoom?>(null)
     var name by mutableStateOf("")
+    var title by mutableStateOf<String?>(null)
+    var subtitle by mutableStateOf<String?>(null)
     var paused by mutableStateOf(false)
     var onGoBack by mutableStateOf({})
     var analytics by mutableStateOf<CallScreenAnalytics?>(null)
@@ -24,6 +26,8 @@ class CallView(context: Context, attrs: AttributeSet? = null, defStyleArr: Int =
             Surface(color = MaterialTheme.colors.background) {
                 CallScreen(
                         name = name,
+                        titleOverride = title,
+                        subtitleOverride = subtitle,
                         room = room,
                         onGoBack = onGoBack,
                         analytics = analytics,
