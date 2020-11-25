@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group='com.github.SofiaSalud'
-version='1.3'
+version='1.4'
 
 android {
     compileSdkVersion 30
@@ -58,5 +58,12 @@ dependencies {
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.compose.runtime:runtime-rxjava2:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-alpha07'
+
+    // This was originally "2.3.0-alpha07". I had to downgrade because the sofia_app project
+    // depends on Segment, which depends on lifecycle v2.2.0, and the newer version causes
+    // it to crash on init. This should probably be upgraded as soon as Segment supports
+    // the newer version of androidx.lifecycle.
+    // Relevant issue: https://github.com/segmentio/analytics-android/issues/725
+    def lifecycleVersion = "2.2.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
 }
