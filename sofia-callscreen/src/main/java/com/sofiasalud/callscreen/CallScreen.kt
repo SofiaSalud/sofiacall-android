@@ -62,6 +62,7 @@ fun CallScreen(
   isActivityPaused: Boolean,
   titleOverride: String? = null,
   subtitleOverride: String? = null,
+  debugStats: Boolean
 ) {
   val context = ContextAmbient.current
   remember(room) {
@@ -78,7 +79,7 @@ fun CallScreen(
       }
     }
   }
-  val (callData, setCallData) = remember { mutableStateOf(Pair(false, 1))}
+  val (callData, setCallData) = remember { mutableStateOf(Pair(false, 1)) }
   val (audioOnly, callId) = callData
 
   val (callViewModel, setCallViewModel) = remember { mutableStateOf<CallViewModel?>(null) }
@@ -150,7 +151,8 @@ fun CallScreen(
         }
       }
     },
-    subscriberName = titleOverride ?: subscribers?.joinToString(separator = ", ") { it.stream?.name ?: "" },
+    subscriberName = titleOverride
+      ?: subscribers?.joinToString(separator = ", ") { it.stream?.name ?: "" },
     subscriberTitle = subtitleOverride ?: room?.name,
     muted = callViewModel?.muted ?: false,
     setMuted = { callViewModel?.setPublisherMuted(it) },
@@ -161,6 +163,7 @@ fun CallScreen(
     resetCall = resetCallViewModel,
     videoSpeed = callViewModel?.subscriberVideoStats?.average ?: 0f,
     audioSpeed = callViewModel?.subscriberAudioStats?.average ?: 0f,
+    debugStats = debugStats,
   )
 }
 
@@ -181,6 +184,7 @@ fun CallScreenUI(
   resetCall: (audioOnly: Boolean) -> Unit,
   videoSpeed: Float,
   audioSpeed: Float,
+  debugStats: Boolean,
 ) {
   val (resetMenuExpanded, setResetMenuExpanded) = remember { mutableStateOf(false) }
 
@@ -241,19 +245,23 @@ fun CallScreenUI(
             Text("Restart without video")
           }
         }
-        Column(
-          modifier = Modifier.padding(top = 8.dp).background(Color(0x44000000)).padding(4.dp)
-        ) {
-          Text(
-            "V: ${(videoSpeed * 0.008f).toInt()} kb/s",
-            color = Color(0x99FFFFFF),
-            fontSize = 10.sp
-          )
-          Text(
-            "A: ${(audioSpeed * 0.008f).toInt()} kb/s",
-            color = Color(0x99FFFFFF),
-            fontSize = 10.sp
-          )
+        if (debugStats) {
+          Column(
+            modifier = Modifier.padding(top = 8.dp).background(Color(0x44000000))
+              .padding(4.dp)
+          ) {
+            Text(
+              "V: ${(videoSpeed * 0.008f).toInt()} kb/s",
+              color = Color(0x99FFFFFF),
+              fontSize = 10.sp
+            )
+            Text(
+              "A: ${(audioSpeed * 0.008f).toInt()} kb/s",
+              color = Color(0x99FFFFFF),
+              fontSize = 10.sp
+            )
+          }
+
         }
       }
       Row(
@@ -288,8 +296,16 @@ fun CallScreenUI(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.SpaceBetween) {
-        Text(subscriberName ?: "", color = Color.White, style = MaterialTheme.typography.body1)
-        Text(subscriberTitle ?: "", color = Color.White, style = MaterialTheme.typography.body2)
+        Text(
+          subscriberName ?: "",
+          color = Color.White,
+          style = MaterialTheme.typography.body1
+        )
+        Text(
+          subscriberTitle ?: "",
+          color = Color.White,
+          style = MaterialTheme.typography.body2
+        )
       }
       FloatingActionButton(
         onClick = onGoBack,
@@ -334,5 +350,6 @@ fun PreviewCallScreenUI() {
     resetCall = {},
     videoSpeed = 0f,
     audioSpeed = 0f,
+    debugStats = true,
   )
 }

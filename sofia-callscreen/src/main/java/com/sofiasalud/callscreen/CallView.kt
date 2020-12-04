@@ -19,6 +19,7 @@ class CallView(context: Context, attrs: AttributeSet? = null, defStyleArr: Int =
     var paused by mutableStateOf(false)
     var onGoBack by mutableStateOf({})
     var analytics by mutableStateOf<CallScreenAnalytics?>(null)
+    var debugStats by mutableStateOf(false)
 
     @Composable
     override fun Content() {
@@ -31,7 +32,8 @@ class CallView(context: Context, attrs: AttributeSet? = null, defStyleArr: Int =
                         room = room,
                         onGoBack = onGoBack,
                         analytics = analytics,
-                        isActivityPaused = paused
+                        isActivityPaused = paused,
+                        debugStats = debugStats
                 )
             }
         }

@@ -154,6 +154,7 @@ fun MainView(openUrl: (url: String) -> Unit, prefs: SharedPreferences, analytics
             isActivityPaused = appStore.paused,
             name = name,
             room = currentRoom!!,
+            debugStats = true,
             onGoBack = {
               val room: VCRoom = currentRoom!!
               roomStore.leaveRoom(room.id, name)
