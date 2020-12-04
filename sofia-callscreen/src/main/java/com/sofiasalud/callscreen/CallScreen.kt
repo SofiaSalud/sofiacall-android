@@ -82,11 +82,11 @@ fun CallScreen(
   val (audioOnly, callId) = callData
 
   val (callViewModel, setCallViewModel) = remember { mutableStateOf<CallViewModel?>(null) }
-
   DisposableEffect(room, audioOnly, callId) {
-    setCallViewModel(initCallViewModel(room, audioOnly))
+    val model = initCallViewModel(room, audioOnly)
+    setCallViewModel(model)
     onDispose {
-      callViewModel?.end()
+      model?.end()
     }
   }
   val resetCallViewModel = { audio: Boolean ->

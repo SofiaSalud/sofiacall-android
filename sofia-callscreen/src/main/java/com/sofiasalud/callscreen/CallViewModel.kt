@@ -2,11 +2,11 @@ package com.sofiasalud.callscreen
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
 import com.opentok.android.*
 import java.util.*
 
@@ -19,6 +19,13 @@ fun OpentokError.didConnectionFail(): Boolean {
   }
 }
 
+fun randomStr(length: Int): String {
+  val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+  return (1..length)
+          .map { allowedChars.random() }
+          .joinToString("")
+}
+
 class CallViewModel(private val context: Context, private val analytics: CallScreenAnalytics?, private val audioOnly: Boolean = false) : ViewModel() {
   companion object {
     const val NETWORK_STAT_WINDOW = 5.0
@@ -28,6 +35,8 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
     fun log(message: String) = Log.d("CallViewModel", message)
   }
 
+  // This model ID is just for debugging purposes.
+  val modelId: String = randomStr(6)
   private var session: Session? by mutableStateOf(null)
   private var publisherName: String? = null
 
@@ -50,7 +59,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
     private set
 
   fun init(name: String, apiKey: String, sessionId: String, token: String) {
-    log("Init $name ||| $apiKey ||| $sessionId ||| $token")
+    log("Init $modelId ||| $name ||| $apiKey ||| $sessionId ||| $token")
     publisherName = name
     session =
       Session.Builder(context, apiKey, sessionId).sessionOptions(object : Session.SessionOptions() {
@@ -71,12 +80,23 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
     log("End...")
     analytics?.trackVideoHangUp(session?.sessionId ?: "")
 
+    session?.setSessionListener(null)
+    session?.unpublish(publisher)
+    publisher?.setPublisherListener(null)
     publisher?.destroy()
 
-    for ((streamId, subscriber) in subscribers) {
+    for ((_, subscriber) in subscribers) {
+      subscriber.setStreamListener(null)
+      subscriber.setSubscriberListener(null)
+      subscriber.setVideoStatsListener(null)
+      subscriber.setAudioStatsListener(null)
+
       session?.unsubscribe(subscriber)
       subscriber.destroy()
     }
+    subscriberAudioStats.clear()
+    subscriberVideoStats.clear()
+
     subscribers = mutableStateMapOf()
     subscribersReconnecting = mutableStateMapOf()
 
@@ -140,7 +160,7 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
     }
 
     override fun onStreamReceived(session: Session?, stream: Stream?) {
-      log("onStreamReceived")
+      log("onStreamReceived ${stream?.streamId}")
       analytics?.trackVideoStreamCreated(session?.sessionId ?: "", stream?.streamId ?: "")
       val id = stream?.streamId ?: ""
       subscribers[id] = Subscriber.Builder(context, stream).build().also {
@@ -304,5 +324,12 @@ class StatQueue(private val maxTime: Double) {
     } else {
       stat.bytes.toFloat()
     }
+  }
+
+  fun clear() {
+    list.clear()
+    total = 0
+    average = 0f
+    lastBytesReceived = 0
   }
 }
