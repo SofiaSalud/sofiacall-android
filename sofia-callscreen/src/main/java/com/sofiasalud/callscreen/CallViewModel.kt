@@ -140,6 +140,8 @@ class CallViewModel(private val context: Context, private val analytics: CallScr
       analytics?.trackVideoSessionConnected(session?.sessionId ?: "")
       publisher = Publisher
         .Builder(context)
+        // Android is having audio problems so setting the default to LOW as a temporary measure
+        .resolution(Publisher.CameraCaptureResolution.LOW)
         .name(publisherName ?: "")
         .build()
         .also {
